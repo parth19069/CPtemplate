@@ -18,37 +18,37 @@ public:
 			marked[v] = false;
 		}
 	}
-	void build(int vertex, int l, int r){
+	void build(int v, int l, int r){
 		if(l == r){
-			t[vertex] = a[l];
+			t[v] = a[l];
 			return;
 		}
 		int mid = l + (r - l)/2;
-		build(2*vertex + 1, l, mid);
-		build(2*vertex + 2, mid + 1, r);
-		t[vertex] = t[2*vertex + 1] + t[2*vertex + 2];
+		build(2*v + 1, l, mid);
+		build(2*v + 2, mid + 1, r);
+		t[v] = t[2*v + 1] + t[2*v + 2];
 	}
-	T sum(int l, int r, int vertex, int tl, int tr){
+	T sum(int l, int r, int v, int tl, int tr){
 		if(l > r) return invalid;
-		if(l == tl and r == tr) return t[vertex];
+		if(l == tl and r == tr) return t[v];
 		int tmid = tl + (tr - tl)/2;
-		push(vertex, tl, tr, tmid);
-		return sum(l, min(r, tmid), 2*vertex + 1, tl, tmid) + sum(max(l, tmid + 1), r, 2*vertex + 2, tmid + 1, tr);
+		push(v, tl, tr, tmid);
+		return sum(l, min(r, tmid), 2*v + 1, tl, tmid) + sum(max(l, tmid + 1), r, 2*v + 2, tmid + 1, tr);
 	}
-	void update(int l, int r, T val, int vertex, int tl, int tr){
+	void update(int l, int r, T val, int v, int tl, int tr){
 		if(l > r) {
 			return;
 		}
 		if(l == tl and r == tr) {
-			t[vertex] = (r - l + 1)*val; 
-			marked[vertex] = true;
+			t[v] = (r - l + 1)*val; 
+			marked[v] = true;
 		}
 		else{
 			int tmid = tl + (tr - tl)/2;
-			push(vertex, tl, tr, tmid);
-			update(l, min(r, tmid), val, 2*vertex + 1, tl, tmid);
-			update(max(l, tmid + 1), r, val, 2*vertex + 2, tmid + 1, tr);
-			t[vertex] = t[2*vertex + 1] + t[2*vertex + 2];
+			push(v, tl, tr, tmid);
+			update(l, min(r, tmid), val, 2*v + 1, tl, tmid);
+			update(max(l, tmid + 1), r, val, 2*v + 2, tmid + 1, tr);
+			t[v] = t[2*v + 1] + t[2*v + 2];
 		}
 	}
 	Lazy_Segment_Tree(int si, T inv){
@@ -80,4 +80,9 @@ int main() {
 	// st.build() -> build the semgment t after filling up the array st.a
 	// st.sum(l, r) -> return sum of segment from l to r (both inclusive; 0 indexed)
 	// st.update(l, r, val) -> update value from positions l to r (0 indexed) to val
+
+	stree.build();
+	cout << stree.sum(0, 3) << endl;
+	stree.update(2, 4, 1);
+	cout << stree.sum(0, 3) << endl;
 }
