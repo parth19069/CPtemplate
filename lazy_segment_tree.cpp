@@ -2,20 +2,29 @@
 
 using namespace std;
 
+
 template<class T> class Lazy_Segment_Tree {
 public:
 	int n;
 	vector<T> t;
 	vector<T> a;
-	vector<bool> marked;
+	vector<T> lazy;
 	T invalid;
 	void push(int v, int tl, int tr, int tmid) {
-		if(marked[v]) {
-			T val = t[v]/(tr - tl + 1);
-			t[2*v + 1] = val*(tmid - tl + 1);
-			t[2*v + 2] = val*(tr - tmid);
-			marked[2*v + 1] = marked[2*v + 2] = true;
-			marked[v] = false;
+		/*
+			This function propagates the lazy value to
+			the children nodes of node v. Change it according
+			to operation. Currently, this push function
+			adds a value to a given range. Don't forget to change
+			the combine operations in query and update functions.
+		*/
+		if(lazy[v] != 0) {
+			t[v] += (tr - tl + 1)*lazy[v];
+			if(tl != tr) {
+				lazy[2*v + 1] += lazy[v];
+				lazy[2*v + 2] += lazy[v];
+			}
+			lazy[v] = 0;
 		}
 	}
 	void build(int v, int l, int r){
@@ -30,22 +39,22 @@ public:
 	}
 	T sum(int l, int r, int v, int tl, int tr){
 		if(l > r) return invalid;
-		if(l == tl and r == tr) return t[v];
 		int tmid = tl + (tr - tl)/2;
 		push(v, tl, tr, tmid);
+		if(l == tl and r == tr) return t[v];
 		return sum(l, min(r, tmid), 2*v + 1, tl, tmid) + sum(max(l, tmid + 1), r, 2*v + 2, tmid + 1, tr);
 	}
 	void update(int l, int r, T val, int v, int tl, int tr){
+		int tmid = tl + (tr - tl)/2;
+		push(v, tl, tr, tmid);
 		if(l > r) {
 			return;
 		}
 		if(l == tl and r == tr) {
-			t[v] = (r - l + 1)*val; 
-			marked[v] = true;
+			lazy[v] += val;
+			push(v, tl, tr, tmid);
 		}
 		else{
-			int tmid = tl + (tr - tl)/2;
-			push(v, tl, tr, tmid);
 			update(l, min(r, tmid), val, 2*v + 1, tl, tmid);
 			update(max(l, tmid + 1), r, val, 2*v + 2, tmid + 1, tr);
 			t[v] = t[2*v + 1] + t[2*v + 2];
@@ -54,7 +63,7 @@ public:
 	Lazy_Segment_Tree(int si, T inv){
 		n = si;
 		t.resize(4*si);
-		marked.resize(4*si);
+		lazy.resize(4*si);
 		a.resize(si);
 		invalid = inv;
 	}
@@ -70,19 +79,16 @@ public:
 };
 
 int main() {
-	int n; cin >> n;
-	vector<int> a(n);
-	Lazy_Segment_Tree<int> stree(n, 0);
+	int n, q; cin >> n >> q;
+	vector<long long> a(n);
+	Lazy_Segment_Tree<long long> stree(n, 0);
 	for(int i = 0; i < n; i++) {
-		cin >> a[i];
+		a[i] = rand() % 10;
 		stree.a[i] = a[i];
 	}
 	// st.build() -> build the semgment t after filling up the array st.a
 	// st.sum(l, r) -> return sum of segment from l to r (both inclusive; 0 indexed)
 	// st.update(l, r, val) -> update value from positions l to r (0 indexed) to val
 
-	stree.build();
-	cout << stree.sum(0, 3) << endl;
-	stree.update(2, 4, 1);
-	cout << stree.sum(0, 3) << endl;
+	
 }
